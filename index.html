@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Reserva de Salas</title>
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.js'></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .calendar, .formulario {
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .idioma {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">Reserva de Salas</h1>
+  
+  <div class="idioma">
+    <button onclick="trocarIdioma('pt')">Português</button>
+    <button onclick="trocarIdioma('en')">English</button>
+  </div>
+  
+  <div class="container">
+    <div class="formulario">
+      <h2 id="formTitle">Reservar Sala</h2>
+      <form id="reservaForm">
+        <label for="nome" id="nomeLabel">Nome:</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <label for="sala" id="salaLabel">Sala:</label>
+        <select id="sala" name="sala">
+          <option value="Sala de reuniões do sotão">Sala de reuniões do sotão</option>
+          <option value="Sala de reuniões do Piso 0">Sala de reuniões do Piso 0</option>
+          <option value="Pérgula">Pérgula</option>
+        </select>
+
+        <label for="data" id="dataLabel">Data:</label>
+        <input type="date" id="data" name="data" required>
+
+        <label for="hora" id="horaLabel">Hora:</label>
+        <input type="time" id="hora" name="hora" required>
+
+        <label for="motivo" id="motivoLabel">Motivo:</label>
+        <textarea id="motivo" name="motivo" rows="3"></textarea>
+
+        <button type="submit" id="btnReserva">Reservar</button>
+      </form>
+    </div>
+
+    <div class="calendar">
+      <h2 id="calendarTitle">Calendário</h2>
+      <div id='calendar'></div>
+    </div>
+  </div>
+
+  <script>
+    function trocarIdioma(idioma) {
+      const textosPt = {
+        title: "Reserva de Salas",
+        formTitle: "Reservar Sala",
+        nomeLabel: "Nome:",
+        salaLabel: "Sala:",
+        salaOptions: ["Sala de reuniões do sotão", "Sala de reuniões do Piso 0", "Pérgula"],
+        dataLabel: "Data:",
+        horaLabel: "Hora:",
+        motivoLabel: "Motivo:",
+        btnReserva: "Reservar",
+        calendarTitle: "Calendário",
+      };
+
+      const textosEn = {
+        title: "Room Reservation",
+        formTitle: "Reserve a Room",
+        nomeLabel: "Name:",
+        salaLabel: "Room:",
+        salaOptions: ["Attic Meeting Room", "Ground Floor Meeting Room", "Pergola"],
+        dataLabel: "Date:",
+        horaLabel: "Time:",
+        motivoLabel: "Reason:",
+        btnReserva: "Reserve",
+        calendarTitle: "Calendar",
+      };
+
+      const textos = idioma === 'pt' ? textosPt : textosEn;
+
+      // Atualiza o título
+      document.getElementById('title').innerText = textos.title;
+      document.getElementById('formTitle').innerText = textos.formTitle;
+      document.getElementById('nomeLabel').innerText = textos.nomeLabel;
+      document.getElementById('salaLabel').innerText = textos.salaLabel;
+      document.getElementById('dataLabel').innerText = textos.dataLabel;
+      document.getElementById('horaLabel').innerText = textos.horaLabel;
+      document.getElementById('motivoLabel').innerText = textos.motivoLabel;
+      document.getElementById('btnReserva').innerText = textos.btnReserva;
+      document.getElementById('calendarTitle').innerText = textos.calendarTitle;
+
+      // Atualiza as opções das salas
+      const salaSelect = document.getElementById('sala');
+      salaSelect.innerHTML = "";
+      textos.salaOptions.forEach(sala => {
+        const option = document.createElement("option");
+        option.value = sala;
+        option.textContent = sala;
+        salaSelect.appendChild(option);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      trocarIdioma('pt');  // Definir idioma inicial como Português
+
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec',
+      });
+      calendar.render();
+
+      const form = document.getElementById('reservaForm');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const dados = {
+          nome: form.nome.value,
+          sala: form.sala.value,
+          data: form.data.value,
+          hora: form.hora.value,
+          motivo: form.motivo.value,
+        };
+
+        fetch('https://script.google.com/macros/s/SEU_SCRIPT_ID/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(dados)
+        }).then(() => {
+          alert("Reserva enviada com sucesso!");
+          calendar.refetchEvents();
+          form.reset();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
